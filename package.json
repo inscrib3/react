@@ -1,6 +1,6 @@
 {
   "name": "@inscrib3/react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "exports": {
@@ -12,6 +12,10 @@
       "import": "./dist/*.js",
       "types": "./dist/*.d.ts"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:inscrib3/react.git"
   },
   "scripts": {
     "build": "tsc"
