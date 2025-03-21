@@ -14,7 +14,7 @@ import React, { useState, useEffect } from 'react';
 import useSdk from '@inscrib3/react';
 
 function App() {
-  const { wallet, drops, error } = useSdk();
+  const { wallet, drops, error } = useSdk(); // Network and Chain (Bitcoin or Fractal) are supported
   const [myDrops, setMyDrops] = useState([]);
   
   // Connect wallet when button is clicked

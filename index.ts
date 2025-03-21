@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { AddressPurpose, BitcoinNetworkType, request, RpcErrorCode, signMultipleTransactions } from "sats-connect";
+import Wallet, { AddressPurpose, BitcoinNetworkType, request, RpcErrorCode, signMultipleTransactions } from "sats-connect";
 import Sdk from "@inscrib3/sdk";
 
-const useSdk = (url?: string) => {
-  const sdk = Sdk(url);
+const useSdk = (
+  network: "mainnet" | "testnet" | "testnet4" | "signet" = "mainnet",
+  chain: "bitcoin" | "fractal" = "bitcoin",
+  url?: string
+) => {
+  const sdk = Sdk(network, chain, url);
   const [error, setError] = useState<string | null>(null);
   const [wallet, setWallet] = useState<{
     paymentAddress: string;
@@ -19,11 +23,29 @@ const useSdk = (url?: string) => {
       throw new Error("Wallet not connected");
     }
     return new Promise<string[]>(async (resolve, reject) => {
+      let networkType: BitcoinNetworkType;
+      switch (network) {
+        case "mainnet":
+          networkType = BitcoinNetworkType.Mainnet;
+          break;
+        case "testnet":
+          networkType = BitcoinNetworkType.Testnet;
+          break;
+        case "testnet4":
+          networkType = BitcoinNetworkType.Testnet4;
+          break;
+        case "signet":
+          networkType = BitcoinNetworkType.Signet;
+          break;
+        default:
+          networkType = BitcoinNetworkType.Mainnet;
+          break;
+      }
       await signMultipleTransactions({
         payload: {
           message: `Requesting to sign multiple transactions`,
           network: {
-            type: BitcoinNetworkType.Signet,
+            type: networkType,
           },
           psbts: [{
             psbtBase64: psbts[0],
@@ -81,6 +103,9 @@ const useSdk = (url?: string) => {
       connect: async () => {
         try {
           setError(null);
+          if (chain === "fractal") {
+            throw new Error("Fractal is not supported");
+          }
           const connectRes = await request('wallet_connect', {
             addresses: [AddressPurpose.Payment, AddressPurpose.Ordinals],
             message: Date.now().toString(),
