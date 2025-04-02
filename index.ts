@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Wallet, { AddressPurpose, BitcoinNetworkType, request, RpcErrorCode, signMultipleTransactions } from "sats-connect";
+import { AddressPurpose, BitcoinNetworkType, request, RpcErrorCode, signMultipleTransactions } from "sats-connect";
 import Sdk from "@inscrib3/sdk";
 
 const useSdk = (
@@ -18,7 +18,10 @@ const useSdk = (
   const [message, setMessage] = useState<string | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
 
-  const mint = async (psbts: string[]) => {
+  const mint = async (params: {
+    psbt: string[];
+    indexToSign: number[][];
+  }) => {
     if (!wallet) {
       throw new Error("Wallet not connected");
     }
@@ -48,16 +51,16 @@ const useSdk = (
             type: networkType,
           },
           psbts: [{
-            psbtBase64: psbts[0],
+            psbtBase64: params.psbt[0],
             inputsToSign: [{
               address: wallet.paymentAddress,
-              signingIndexes: [0],
+              signingIndexes: params.indexToSign[0],
             }]
           }, {
-            psbtBase64: psbts[1],
+            psbtBase64: params.psbt[1],
             inputsToSign: [{
               address: wallet.recipientAddress,
-              signingIndexes: [0],
+              signingIndexes: params.indexToSign[1],
             }]
           }]
         },
@@ -208,7 +211,7 @@ const useSdk = (
             throw new Error("Wallet not connected");
           }
           const mintRes = await sdk.drops.mint(id, wallet.paymentAddress, wallet.paymentPublicKey, wallet.recipientAddress, wallet.recipientPublicKey, wallet.recipientAddress, message || "", signature || "");
-          const signedPsbt = await mint(mintRes.psbt);
+          const signedPsbt = await mint(mintRes);
           const broadcastMintRes = await sdk.drops.broadcastMint(id, signedPsbt, wallet.recipientAddress, message || "", signature || "");
           return broadcastMintRes;
         } catch (e) {
